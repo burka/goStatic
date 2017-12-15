@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/rs/cors"
 )
 
 var (
@@ -48,6 +50,19 @@ func main() {
 	port := ":" + strconv.FormatInt(int64(*portPtr), 10)
 
 	handler := http.FileServer(http.Dir(*path))
+	log.Println(*path)
+
+	static_cors_middleware := cors.New(cors.Options{
+		AllowedOrigins: []string{
+			"*",
+		},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{
+			"Accept", "Content-Type", "X-Custom-Header", "Origin"},
+		AllowCredentials: true,
+		MaxAge:           3600,
+		// Debug:            true,
+	})
 
 	if *basicAuth {
 		log.Println("Enabling Basic Auth")
@@ -73,7 +88,7 @@ func main() {
 		}
 	}
 
-	http.Handle("/", handler)
+	http.Handle("/", static_cors_middleware.Handler(handler))
 
 	log.Printf("Listening at 0.0.0.0%v...", port)
 	log.Fatalln(http.ListenAndServe(port, nil))
