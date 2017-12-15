@@ -64,6 +64,8 @@ func main() {
 		// Debug:            true,
 	})
 
+	handler = static_cors_middleware.Handler(handler)
+
 	if *basicAuth {
 		log.Println("Enabling Basic Auth")
 		if len(*setBasicAuth) != 0 {
@@ -88,7 +90,7 @@ func main() {
 		}
 	}
 
-	http.Handle("/", static_cors_middleware.Handler(handler))
+	http.Handle("/", handler)
 
 	log.Printf("Listening at 0.0.0.0%v...", port)
 	log.Fatalln(http.ListenAndServe(port, nil))
